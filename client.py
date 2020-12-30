@@ -25,7 +25,7 @@ class Client:
             magic_cookie, msg_type, tcp_port = unpack('Ibh', data)
             if is_valid(magic_cookie, msg_type):
                 print(f"Received offer from {address[0]}, attempting to connect...")
-                self.connect(address[0], 5050)
+                self.connect(address[0], tcp_port)
 
     def connect(self, address, tcp_port):  # connect TCP to send name and play
         self.tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # to send team name and play the game
@@ -33,7 +33,8 @@ class Client:
 
         try:
             self.tcp_sock.sendall(str.encode(self.team_name + '\n'))  # send team_name
-            end_time=time.time()+10
+            end_time=time.time()+5
+            # end_time=time.time()+10
             while time.time()<end_time:
                 # wait for a game started message
                 start_game_msg = self.tcp_sock.recv(4096).decode('utf-8')
@@ -41,16 +42,26 @@ class Client:
                     self.game_mode = True
                     print(start_game_msg)
                     # start_game
-                    while self.game_mode:
-                        end_time = time.time()+5
-                        while time.time() < end_time or self.game_mode:
-                            c = keyboard.read_key()
-                            print("read key "+c)
+                    # while self.game_mode:
+                    #     end_time = time.time()+5
+                    while time.time() < end_time or self.game_mode:
+                        c = keyboard.read_key()
+                        print("read key "+c)
+                        try:
                             self.tcp_sock.sendall(str.encode(c))
                             print("send "+c+' to the server')
-                        to_stop = self.tcp_sock.recv(16).decode('utf-8')  # check if get stop msg from server
+                        except:
+                            # break
+                            self.game_mode = False
+                            pass
+                    try:
+                        to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
                         if to_stop:
                             self.game_mode = False
+                    except:
+
+                        print("connection lost")
+                        #     pass
 
         finally:
             self.tcp_sock.close()

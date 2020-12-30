@@ -25,6 +25,10 @@ class Server:
         self.group1 = []
         self.group2 = []
 
+        self.best_score=0
+        self.best_team=''
+        self.most_common_letter=''
+
     def start(self):
         print("Server started, listening on IP address ", self.host)
         while True:
@@ -70,15 +74,18 @@ class Server:
         # while thread1.is_alive():
         #     continue
         i = len(self.clients_socket)-1
+        end_time=time.time()+10
         for team_name in self.clients_socket:  # do multithreading
-
+            # if t_end>time.time():
             client_socket = self.clients_socket[team_name]
             thread2 = threading.Thread(target=self.recieve_char, args=(client_socket, team_name, time.time()+10))
             thread2.start()
             if i==0:
-                while thread2.is_alive():
+                while thread2.is_alive() and end_time>time.time():
                     continue
             i-=1
+            # else:
+            #     break
 
 
         end_msg = self.calc_groups_counter()
@@ -99,20 +106,24 @@ class Server:
 
     def recieve_char(self, client_socket, team_name, end_time):
         while time.time() < end_time:
-            data = client_socket.recv(1).decode('utf-8')
-            print('got msg: ' + data)
+            client_socket.settimeout(10)
+            try:
+                data = client_socket.recv(1).decode('utf-8')
+                print('got msg: ' + data)
 
-            if data:
-                if team_name in self.clients_socket:
-                    self.clients_counter[team_name] += 1
-                    self.chars[team_name]+=data
-                # else:
-                #     print("something went wrong on server.recieve_char")
+                if data:
+                    if team_name in self.clients_socket:
+                        self.clients_counter[team_name] += 1
+                        self.chars[team_name]+=data
+                    # else:
+                    #     print("something went wrong on server.recieve_char")
+            except:
+                pass
 
     def get_team_name_and_enter_to_group(self, client_socket, address):
         team_name = client_socket.recv(1024).decode('utf-8')
         team_name = team_name[:-1]
-        print(team_name)
+        # print(team_name)
         self.clients_socket[team_name] = client_socket
         self.clients_counter[team_name] = 0
         self.chars[team_name] = ''
@@ -139,7 +150,26 @@ class Server:
                 group2_count += count
         winner_group = "Group 1" if group1_count >= group2_count else "Group 2"
         winner_teams = arr_to_str(self.group1) if group1_count >= group2_count else arr_to_str(self.group2)
-        return f"Game over!\nGroup 1 typed in {group1_count} characters. Group 2 typed in {group2_count} characters.\n{winner_group} wins!\nCongratulations to the winners:\n==\n{winner_teams}"
+        if group1_count>self.best_score:
+            self.best_score=group1_count
+            self.best_team="Group 1"
+        if group2_count>self.best_score:
+            self.best_score = group2_count
+            self.best_team = "Group 2"
+        letters={}
+        for team_name in self.chars:
+            for c in self.chars[team_name]:
+                if c not in letters:
+                    letters[c]=0
+                letters[c]+=1
+        amount=0
+        for c in letters:
+            if letters[c]>amount:
+                self.most_common_letter=c
+                amount=letters[c]
+        return f"Game over!\nGroup 1 typed in {group1_count} characters. Group 2 typed in {group2_count} characters.\n" \
+               f"{winner_group} wins!\nCongratulations to the winners:\n==\n{winner_teams}\n ============= Some Statistics ============\n\n" \
+               f"The best score ever is {self.best_score} by the team {self.best_team}\nThe most common letter that appears is {self.most_common_letter}, which shows {amount} times\n"
 
 
 def arr_to_str(arr):
