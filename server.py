@@ -15,7 +15,7 @@ class Server:
         self.udp_sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
         self.host = gethostbyname(gethostname())
-        self.tcp_sock.bind((self.host, 5050))
+        self.tcp_sock.bind((self.host, 2126))
         self.tcp_sock.listen(1)  # Listen for incoming connections
 
         self.clients_socket = {}
@@ -27,7 +27,6 @@ class Server:
 
     def start(self):
         print("Server started, listening on IP address ", self.host)
-        # self.udp_sock.bind((self.host, self.port))  # bind the socket to the port
         while True:
             self.clients_socket = {}
             self.clients_counter = {}
@@ -38,22 +37,21 @@ class Server:
     def send_offers(self):
         # send UDP broadcast packets
 
-        data = pack('Ibh', 0xfeedbeef, 0x2, 5050)  # what is the port for the TCP connection ?
+        data = pack('Ibh', 0xfeedbeef, 0x2, 2126)  # what is the port for the TCP connection ?
         start_time = time.time()
         t_end = time.time() + 10  # during 10 seconds send broadcasts
 
         while time.time() < t_end:
             thread = threading.Thread(target=self.send_broadcast, args=(data, t_end))
             thread.start()
-            # self.send_broadcast(data)
 
             self.tcp_sock.settimeout(10)
             try:
                 client_socket, client_address = self.tcp_sock.accept()
                 print(f"one connection is active {client_address}....")
-                thread = threading.Thread(target=self.get_team_name_and_enter_to_group,
+                thread1 = threading.Thread(target=self.get_team_name_and_enter_to_group,
                                           args=(client_socket, client_address))
-                thread.start()
+                thread1.start()
                 left_time = (time.time() - start_time)
                 if 0 < left_time < 1:  # every second
                     time.sleep(1 - left_time)
@@ -65,18 +63,23 @@ class Server:
             cs = self.clients_socket[team_name]
             self.send_start_game_msg(cs)
 
-        print("after send start msg")
-
         global start_game_time
         start_game_time = time.time()
-        # while time.time()-start_game_time < 10:
-        # for (team_name, client_socket) in self.clients_socket:  # do multithreading
+        while thread.is_alive():
+            continue
+        # while thread1.is_alive():
+        #     continue
+        i = len(self.clients_socket)-1
         for team_name in self.clients_socket:  # do multithreading
 
-            print("Yarin---"+team_name)
             client_socket = self.clients_socket[team_name]
-            thread = threading.Thread(target=self.recieve_char, args=(client_socket, team_name))
-            thread.start()
+            thread2 = threading.Thread(target=self.recieve_char, args=(client_socket, team_name, time.time()+10))
+            thread2.start()
+            if i==0:
+                while thread2.is_alive():
+                    continue
+            i-=1
+
 
         end_msg = self.calc_groups_counter()
         print(end_msg)
@@ -94,21 +97,17 @@ class Server:
             time.sleep(1)
 
 
-    def recieve_char(self, client_socket, team_name):
-        while time.time()-start_game_time < 10:
-            print("before recive")
-            data = client_socket.recv(10).decode('utf-8')
-            print(data)
+    def recieve_char(self, client_socket, team_name, end_time):
+        while time.time() < end_time:
+            data = client_socket.recv(1).decode('utf-8')
+            print('got msg: ' + data)
 
             if data:
-                print("after recive")
-                print(self.clients_counter)
-                print(team_name)
                 if team_name in self.clients_socket:
                     self.clients_counter[team_name] += 1
                     self.chars[team_name]+=data
-                else:
-                    print("something went wrong on server.recieve_char")
+                # else:
+                #     print("something went wrong on server.recieve_char")
 
     def get_team_name_and_enter_to_group(self, client_socket, address):
         team_name = client_socket.recv(1024).decode('utf-8')
@@ -117,9 +116,7 @@ class Server:
         self.clients_socket[team_name] = client_socket
         self.clients_counter[team_name] = 0
         self.chars[team_name] = ''
-        print("get team name ")
-        print(team_name)
-        print(self.clients_counter)
+
         if team_name:
             k = randint(0, 1)
             if k == 0:
@@ -129,10 +126,7 @@ class Server:
 
     def send_start_game_msg(self, client_socket):
         start_game_msg = f"Welcome to Keyboard Spamming Battle Royale.\nGroup 1:\n====\n{arr_to_str(self.group1)}\nGroup 2:\n====\n{arr_to_str(self.group2)}\nStart pressing keys on your keyboard as fast as you can!!"
-        # start_game_msg = "good\n"
-        print("want sending")
         client_socket.sendall(str.encode(start_game_msg))
-        print("send..")
 
     def calc_groups_counter(self):
         group1_count = 0
