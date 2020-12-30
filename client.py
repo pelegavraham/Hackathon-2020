@@ -3,6 +3,9 @@ import time
 from struct import *
 import sys
 
+import keyboard
+
+
 class Client:
 
     def __init__(self, team_name):
@@ -43,11 +46,12 @@ class Client:
                     # while self.game_mode:
                     end_time = time.time()+10
                     while time.time() < end_time:
-                        c = sys.stdin.read(1)  # reads one byte at a time, similar to getchar()
+                        c = keyboard.read_key()
+                        # c = sys.stdin.read(1)  # reads one byte at a time, similar to getchar()
                         self.tcp_sock.sendall(str.encode(c))
-                    to_stop = self.tcp_sock.recv(16).decode('utf-8')  # check if get stop msg from server
-                    if to_stop:
-                        self.game_mode = False
+                        to_stop = self.tcp_sock.recv(16).decode('utf-8')  # check if get stop msg from server
+                        if to_stop:
+                            self.game_mode = False
 
         finally:
             self.tcp_sock.close()
