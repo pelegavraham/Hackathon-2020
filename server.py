@@ -101,9 +101,9 @@ class Server:
             print(data)
 
             if data:
-                # print("after recive")
-                # print(self.clients_counter)
-                # print(team_name)
+                print("after recive")
+                print(self.clients_counter)
+                print(team_name)
                 if team_name in self.clients_socket:
                     self.clients_counter[team_name] += 1
                     self.chars[team_name]+=data
