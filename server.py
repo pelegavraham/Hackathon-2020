@@ -5,6 +5,8 @@ import sys, time
 from random import randint
 import threading
 
+start_game_time = 0
+
 class Server:
     def __init__(self):
         self.udp_sock = socket(AF_INET, SOCK_DGRAM)
@@ -26,6 +28,10 @@ class Server:
         print("Server started, listening on IP address ", self.host)
         # self.udp_sock.bind((self.host, self.port))  # bind the socket to the port
         while True:
+            self.clients_socket = {}
+            self.clients_counter = {}
+            self.group1 = []
+            self.group2 = []
             self.send_offers()
 
     def send_offers(self):
@@ -56,24 +62,31 @@ class Server:
 
         print("exit while..")
 
-        for cs in self.clients_socket:
-            print("before send start msg")
+        for team_name in self.clients_socket:
+            cs = self.clients_socket[team_name]
             self.send_start_game_msg(cs)
 
         print("after send start msg")
 
+        global start_game_time
         start_game_time = time.time()
         # while time.time()-start_game_time < 10:
-        for (team_name, client_socket) in self.clients_socket:  # do multithreading
-            thread = threading.Thread(target=self.recieve_char, args=(client_socket, team_name, start_game_time))
+        # for (team_name, client_socket) in self.clients_socket:  # do multithreading
+        for team_name in self.clients_socket:  # do multithreading
+
+            print(team_name)
+            client_socket = self.clients_socket[team_name]
+            thread = threading.Thread(target=self.recieve_char, args=(client_socket, team_name))
             thread.start()
 
         end_msg = self.calc_groups_counter()
         print(end_msg)
 
-        for team_name, client_socket in self.clients_socket:
+        for team_name in self.clients_socket:
+            client_socket = self.clients_socket[team_name]
             client_socket.sendall(str.encode(end_msg))
-            client_socket.close()
+
+    # =============================================================================================================== #
 
     def send_broadcast(self, data, t_end):
         while time.time() < t_end:
@@ -81,9 +94,8 @@ class Server:
             print("send broadcast...")
             time.sleep(1)
 
-    # =============================================================================================================== #
 
-    def recieve_char(self, client_socket, team_name, start_game_time):
+    def recieve_char(self, client_socket, team_name):
         while time.time()-start_game_time < 10:
             print("before recive")
             data = client_socket.recv(1)
@@ -93,6 +105,7 @@ class Server:
 
     def get_team_name_and_enter_to_group(self, client_socket, address):
         team_name = client_socket.recv(1024).decode('utf-8')
+        team_name = team_name[:-1]
         print(team_name)
         self.clients_socket[team_name] = client_socket
         self.clients_counter[team_name] = 0
@@ -103,9 +116,9 @@ class Server:
             else:
                 self.group2.append(team_name)
 
-    async def send_start_game_msg(self, client_socket):
-        # start_game_msg = f"Welcome to Keyboard Spamming Battle Royale.\nGroup 1:\n====\n{arr_to_str(self.group1)}\nGroup 2:\n====\n{arr_to_str(self.group2)}\nStart pressing keys on your keyboard as fast as you can!!"
-        start_game_msg = "good\n"
+    def send_start_game_msg(self, client_socket):
+        start_game_msg = f"Welcome to Keyboard Spamming Battle Royale.\nGroup 1:\n====\n{arr_to_str(self.group1)}\nGroup 2:\n====\n{arr_to_str(self.group2)}\nStart pressing keys on your keyboard as fast as you can!!"
+        # start_game_msg = "good\n"
         print("want sending")
         client_socket.sendall(str.encode(start_game_msg))
         print("send..")
@@ -113,7 +126,8 @@ class Server:
     def calc_groups_counter(self):
         group1_count = 0
         group2_count = 0
-        for team_name, count in self.clients_counter:
+        for team_name in self.clients_counter:
+            count = self.clients_counter[team_name]
             if team_name in self.group1:
                 group1_count += count
             else:

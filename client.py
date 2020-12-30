@@ -3,7 +3,6 @@ import time
 from struct import *
 import sys
 
-
 class Client:
 
     def __init__(self, team_name):
@@ -18,7 +17,6 @@ class Client:
         self.udp_sock.bind((self.host, self.udp_port))
 
         while True:
-            print("want to recieve")
             data, address = self.udp_sock.recvfrom(10)  # received offer
             print("recieve....")
             magic_cookie, msg_type, tcp_port = unpack('Ibh', data)
