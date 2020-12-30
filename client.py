@@ -43,7 +43,9 @@ class Client:
                     self.game_mode = True
                     print(start_game_msg)
                     # start_game
-                    while self.game_mode:
+                    # while self.game_mode:
+                    end_time = time.time()+10
+                    while time.time() < end_time:
                         c = keyboard.read_key()
                         # c = sys.stdin.read(1)  # reads one byte at a time, similar to getchar()
                         self.tcp_sock.sendall(str.encode(c))

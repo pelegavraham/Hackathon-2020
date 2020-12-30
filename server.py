@@ -61,8 +61,6 @@ class Server:
             except:
                 pass
 
-        print("exit while..")
-
         for team_name in self.clients_socket:
             cs = self.clients_socket[team_name]
             self.send_start_game_msg(cs)
