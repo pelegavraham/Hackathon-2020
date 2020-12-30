@@ -31,7 +31,7 @@ class Client:
         try:
             self.tcp_sock.sendall(str.encode(self.team_name + '\n'))  # send team_name
             end_time=time.time()+10
-            while time.time()<end_time:
+            while time.time() < end_time:
                 # wait for a game started message
                 print("want start msg..")
                 start_game_msg = self.tcp_sock.recv(4096).decode('utf-8')
