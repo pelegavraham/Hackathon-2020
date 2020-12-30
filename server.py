@@ -15,7 +15,7 @@ class Server:
         self.udp_sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
         self.host = gethostbyname(gethostname())
-        self.tcp_sock.bind((self.host, 5050))
+        self.tcp_sock.bind((self.host, 2126))
         self.tcp_sock.listen(1)  # Listen for incoming connections
 
         self.clients_socket = {}
@@ -41,7 +41,7 @@ class Server:
     def send_offers(self):
         # send UDP broadcast packets
 
-        data = pack('Ibh', 0xfeedbeef, 0x2, 5050)  # what is the port for the TCP connection ?
+        data = pack('Ibh', 0xfeedbeef, 0x2, 2126)  # what is the port for the TCP connection ?
         start_time = time.time()
         t_end = time.time() + 10  # during 10 seconds send broadcasts
 
@@ -77,6 +77,7 @@ class Server:
         end_time=time.time()+10
         for team_name in self.clients_socket:  # do multithreading
             # if t_end>time.time():
+
             client_socket = self.clients_socket[team_name]
             thread2 = threading.Thread(target=self.recieve_char, args=(client_socket, team_name, time.time()+10))
             thread2.start()
