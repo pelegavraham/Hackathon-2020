@@ -20,6 +20,7 @@ class Server:
 
         self.clients_socket = {}
         self.clients_counter = {}
+        self.chars={}
         self.port = 13117  # the same port as used by the clients
         self.group1 = []
         self.group2 = []
@@ -74,7 +75,7 @@ class Server:
         # for (team_name, client_socket) in self.clients_socket:  # do multithreading
         for team_name in self.clients_socket:  # do multithreading
 
-            print(team_name)
+            print("Yarin---"+team_name)
             client_socket = self.clients_socket[team_name]
             thread = threading.Thread(target=self.recieve_char, args=(client_socket, team_name))
             thread.start()
@@ -98,10 +99,18 @@ class Server:
     def recieve_char(self, client_socket, team_name):
         while time.time()-start_game_time < 10:
             print("before recive")
-            data = client_socket.recv(1)
+            data = client_socket.recv(10).decode('utf-8')
+            print(data)
+
             if data:
-                print("after recive")
-                self.clients_counter[team_name] += 1
+                # print("after recive")
+                # print(self.clients_counter)
+                # print(team_name)
+                if team_name in self.clients_socket:
+                    self.clients_counter[team_name] += 1
+                    self.chars[team_name]+=data
+                else:
+                    print("something went wrong on server.recieve_char")
 
     def get_team_name_and_enter_to_group(self, client_socket, address):
         team_name = client_socket.recv(1024).decode('utf-8')
@@ -109,6 +118,10 @@ class Server:
         print(team_name)
         self.clients_socket[team_name] = client_socket
         self.clients_counter[team_name] = 0
+        self.chars[team_name] = ''
+        print("get team name ")
+        print(team_name)
+        print(self.clients_counter)
         if team_name:
             k = randint(0, 1)
             if k == 0:
