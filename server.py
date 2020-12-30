@@ -4,8 +4,12 @@ from struct import *
 import sys, time
 from random import randint
 import threading
-
+from colors import bcolors as b
 start_game_time = 0
+
+
+
+
 
 class Server:
     def __init__(self):
@@ -30,7 +34,7 @@ class Server:
         self.most_common_letter=''
 
     def start(self):
-        print("Server started, listening on IP address ", self.host)
+        print(f"{b.OKGREEN}Server started, listening on IP address{b.ENDC}", self.host)
         while True:
             self.clients_socket = {}
             self.clients_counter = {}

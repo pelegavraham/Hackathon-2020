@@ -57,6 +57,7 @@ class Client:
                     try:
                         to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
                         if to_stop:
+                            print(to_stop)
                             self.game_mode = False
                     except:
 
