@@ -60,13 +60,9 @@ class Server:
             except:
                 pass
 
-        print("exit while..")
-
         for team_name in self.clients_socket:
             cs = self.clients_socket[team_name]
             self.send_start_game_msg(cs)
-
-        print("after send start msg")
 
         global start_game_time
         start_game_time = time.time()
@@ -94,11 +90,10 @@ class Server:
             print("send broadcast...")
             time.sleep(1)
 
-
     def recieve_char(self, client_socket, team_name):
         while time.time()-start_game_time < 10:
             print("before recive")
-            data = client_socket.recv(1)
+            data = client_socket.recv(1).decode("utf-8")
             if data:
                 print("after recive")
                 self.clients_counter[team_name] += 1
