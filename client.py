@@ -34,10 +34,15 @@ class Client:
         try:
             self.tcp_sock.sendall(str.encode(self.team_name + '\n'))  # send team_name
             end_time=time.time()+5
-            # end_time=time.time()+10
-            while time.time()<end_time:
+            while time.time()<end_time or self.game_mode:
                 # wait for a game started message
-                start_game_msg = self.tcp_sock.recv(4096).decode('utf-8')
+                try:
+                    start_game_msg = self.tcp_sock.recv(4096).decode('utf-8')
+                except:
+                    # break
+                    # self.game_mode = False
+                    pass
+                # end_time = time.time() + 5
                 if start_game_msg:
                     self.game_mode = True
                     print(start_game_msg)
@@ -52,14 +57,22 @@ class Client:
                             print("send "+c+' to the server')
                         except:
                             # break
-                            self.game_mode = False
-                            pass
+                            # self.game_mode = False
+                            # pass
+                            # if self.game_mode:
+                            try:
+                                to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
+                                if to_stop:
+                                    self.game_mode = False
+                            except:
+                                self.game_mode = False
                     try:
-                        to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
-                        if to_stop:
-                            print(to_stop)
-                            self.game_mode = False
+                        if self.game_mode:
+                            to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
+                            if to_stop:
+                                self.game_mode = False
                     except:
+                        self.game_mode = False
 
                         print("connection lost")
                         #     pass
