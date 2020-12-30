@@ -36,19 +36,18 @@ class Client:
             end_time=time.time()+10
             while time.time()<end_time:
                 # wait for a game started message
-                print("want start msg..")
                 start_game_msg = self.tcp_sock.recv(4096).decode('utf-8')
-                print(start_game_msg)
                 if start_game_msg:
                     self.game_mode = True
                     print(start_game_msg)
                     # start_game
-                    # while self.game_mode:
-                    end_time = time.time()+10
-                    while time.time() < end_time:
-                        c = keyboard.read_key()
-                        # c = sys.stdin.read(1)  # reads one byte at a time, similar to getchar()
-                        self.tcp_sock.sendall(str.encode(c))
+                    while self.game_mode:
+                        end_time = time.time()+5
+                        while time.time() < end_time or self.game_mode:
+                            c = keyboard.read_key()
+                            print("read key "+c)
+                            self.tcp_sock.sendall(str.encode(c))
+                            print("send "+c+' to the server')
                         to_stop = self.tcp_sock.recv(16).decode('utf-8')  # check if get stop msg from server
                         if to_stop:
                             self.game_mode = False
