@@ -8,9 +8,6 @@ from colors import bcolors as b
 start_game_time = 0
 
 
-
-
-
 class Server:
     def __init__(self):
         self.udp_sock = socket(AF_INET, SOCK_DGRAM)
@@ -90,6 +87,7 @@ class Server:
                     continue
             i-=1
             # else:
+            # else:
             #     break
 
 
@@ -99,6 +97,7 @@ class Server:
         for team_name in self.clients_socket:
             client_socket = self.clients_socket[team_name]
             client_socket.sendall(str.encode(end_msg))
+            print(f"send end msg to client {client_socket}")
 
     # =============================================================================================================== #
 
@@ -127,7 +126,7 @@ class Server:
     def get_team_name_and_enter_to_group(self, client_socket, address):
         team_name = client_socket.recv(1024).decode('utf-8')
         team_name = team_name[:-1]
-        # print(team_name)
+        print(team_name)
         self.clients_socket[team_name] = client_socket
         self.clients_counter[team_name] = 0
         self.chars[team_name] = ''
