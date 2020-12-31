@@ -2,8 +2,8 @@ import socket
 import time
 from struct import *
 import sys
-
 import keyboard
+from colors import bcolors as b
 
 
 class Client:
@@ -16,15 +16,14 @@ class Client:
         self.game_mode = False
 
     def start(self):  # connect UDP to get offers
-        print("Client started, listening for offer requests...")
+        print(f"{b.OKGREEN}Client started, listening for offer requests...{b.ENDC}")
         self.udp_sock.bind((self.host, self.udp_port))
 
         while True:
             data, address = self.udp_sock.recvfrom(10)  # received offer
-            print("recieve....")
             magic_cookie, msg_type, tcp_port = unpack('Ibh', data)
             if is_valid(magic_cookie, msg_type):
-                print(f"Received offer from {address[0]}, attempting to connect...")
+                print(f"{b.HEADER}Received offer from {address[0]}, attempting to connect...{b.ENDC}")
                 self.connect(address[0], tcp_port)
 
     def connect(self, address, tcp_port):  # connect TCP to send name and play
@@ -45,16 +44,16 @@ class Client:
                 # end_time = time.time() + 5
                 if start_game_msg:
                     self.game_mode = True
-                    print(start_game_msg)
+                    print(f"{b.BOLD}{start_game_msg}{b.ENDC}")
                     # start_game
                     # while self.game_mode:
                     #     end_time = time.time()+5
                     while time.time() < end_time or self.game_mode:
                         c = keyboard.read_key()
-                        print("read key "+c)
+                        print(f"{b.OKBLUE}read key {c}{b.ENDC}")
                         try:
                             self.tcp_sock.sendall(str.encode(c))
-                            print("send "+c+' to the server')
+                            print(f"{b.OKBLUE}send {c} to the server{b.ENDC}")
                         except:
                             # break
                             # self.game_mode = False
@@ -74,12 +73,12 @@ class Client:
                     except:
                         self.game_mode = False
 
-                        print("connection lost")
+                        print(f"{b.FAIL}connection lost{b.ENDC}")
                         #     pass
 
         finally:
             self.tcp_sock.close()
-            print("Server disconnected, listening for offer requests...")
+            print(f"{b.WARNING}Server disconnected, listening for offer requests...{b.ENDC}")
 
 
 def is_valid(magic_cookie, msg_type):
@@ -87,5 +86,5 @@ def is_valid(magic_cookie, msg_type):
 
 
 if __name__ == "__main__":
-    client = Client("Cats")
+    client = Client("spam")
     client.start()

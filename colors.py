@@ -9,12 +9,12 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-# print(f"{bcolors.HEADER}abc")
-# print(f"{bcolors.OKBLUE}abc")
-# print(f"{bcolors.OKCYAN}abc")
-# print(f"{bcolors.OKGREEN}abc")
-# print(f"{bcolors.WARNING}abc")
-# print(f"{bcolors.FAIL}abc")
-# print(f"{bcolors.ENDC}abc")
-# print(f"{bcolors.BOLD}abc")
-# print(f"{bcolors.UNDERLINE}abc")
+# print(f"{bcolors.HEADER}HEADER")
+# print(f"{bcolors.OKBLUE}OKBLUE")
+# print(f"{bcolors.OKCYAN}OKCYAN")
+# print(f"{bcolors.OKGREEN}OKGREEN")
+# print(f"{bcolors.WARNING}WARNING")
+# print(f"{bcolors.FAIL}FAIL")
+# print(f"{bcolors.ENDC}ENDC")
+# print(f"{bcolors.BOLD}BOLD")
+# print(f"{bcolors.UNDERLINE}UNDERLINE")

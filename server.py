@@ -56,7 +56,7 @@ class Server:
             self.tcp_sock.settimeout(10)
             try:
                 client_socket, client_address = self.tcp_sock.accept()
-                print(f"one connection is active {client_address}....")
+                print(f"{b.HEADER}one connection is active {client_address}....{b.ENDC}")
                 thread1 = threading.Thread(target=self.get_team_name_and_enter_to_group,
                                           args=(client_socket, client_address))
                 thread1.start()
@@ -94,7 +94,7 @@ class Server:
 
 
         end_msg = self.calc_groups_counter()
-        print(end_msg)
+        print(f"{b.BOLD}{end_msg}{b.ENDC}")
 
         for team_name in self.clients_socket:
             client_socket = self.clients_socket[team_name]
@@ -105,16 +105,15 @@ class Server:
     def send_broadcast(self, data, t_end):
         while time.time() < t_end:
             self.udp_sock.sendto(data, ('<broadcast>', self.port))
-            print("send broadcast...")
+            print(f"{b.OKBLUE}send broadcast...{b.ENDC}")
             time.sleep(1)
-
 
     def recieve_char(self, client_socket, team_name, end_time):
         while time.time() < end_time:
             client_socket.settimeout(10)
             try:
                 data = client_socket.recv(1).decode('utf-8')
-                print('got msg: ' + data)
+                print(f'{b.OKBLUE}got msg: ' + data + f'{b.ENDC}')
 
                 if data:
                     if team_name in self.clients_socket:
