@@ -1,5 +1,4 @@
 import socket
-import time
 from struct import *
 import keyboard
 from colors import bcolors as b
@@ -10,10 +9,10 @@ class Client:
     def __init__(self, team_name):
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # to get servers offer
         self.host = socket.gethostbyname(socket.gethostname())
-        self.udp_port = 13117  # The same port as used by the servers
+        self.udp_port = 13117
         self.team_name = team_name
         self.game_mode = False
-        self.port = 0
+        self.port = 0  # flag
 
     def start(self):  # connect UDP to get offers
         print(f"{b.OKGREEN}Client started, listening for offer requests...{b.ENDC}")
@@ -21,7 +20,6 @@ class Client:
         self.udp_sock.bind((self.host, self.udp_port))
 
         while True:
-
             try:
                 data, address = self.udp_sock.recvfrom(10)  # received offer
                 magic_cookie, msg_type, tcp_port = unpack('Ibh', data)
@@ -46,7 +44,7 @@ class Client:
             self.tcp_sock.setblocking(False)
             if start_game_msg:
                 self.game_mode = True
-                print(f"{b.BOLD}{start_game_msg}{b.ENDC}")
+                print(f"{b.OKCYAN}{start_game_msg}{b.ENDC}")
 
                 first = True
                 while self.game_mode:
@@ -67,7 +65,7 @@ class Client:
                     except:
                         pass
                     try:
-                        to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get stop msg from server
+                        to_stop = self.tcp_sock.recv(1024).decode('utf-8')  # check if get end msg from server
                         if to_stop:
                             print(to_stop)
                             self.game_mode = False
@@ -78,7 +76,7 @@ class Client:
         finally:
             self.tcp_sock.close()
             self.game_mode = False
-            print(f"{b.WARNING}Server disconnected, listening for offer requests...{b.ENDC}")
+            print(f"{b.OKCYAN}Server disconnected, listening for offer requests...{b.ENDC}")
 
 
 def is_valid(magic_cookie, msg_type):
